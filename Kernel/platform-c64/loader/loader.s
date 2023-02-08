@@ -1,6 +1,5 @@
 ; FUZIX REU loader for C64
 
-        .include "zeropage.inc"
         .include "console.inc"
         .include "blkcopy.inc"
         .include "reu.inc"
@@ -18,11 +17,6 @@ MIN_REU_PAGES = $7f
 
         ; use "free space"
 reu_detect_buf := $d000 - $100
-
-        .zeropage
-ptr1:   .res    2
-ptr2:   .res    2
-tmp1:   .res    2
 
         ; here we begin
         .segment "STARTUP"

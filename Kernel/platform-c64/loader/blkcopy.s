@@ -1,6 +1,10 @@
-        .include "zeropage.inc"
+        .export blkcopy_helper
+        .export ptr1
+        .export ptr2
 
-        .global blkcopy_helper
+        .zeropage
+ptr1: .res 2
+ptr2: .res 2
 
         .segment "STARTUP"
 

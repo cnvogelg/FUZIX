@@ -1,4 +1,6 @@
         .global blkcopy_helper
+        .globalzp ptr1
+        .globalzp ptr2
 
 .macro blkcopy from, to, size
         lda #<from
