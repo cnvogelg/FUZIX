@@ -8,6 +8,7 @@ kernel_begin := $800
 kernel_end   := $ffff
 kernel_size  := kernel_end - kernel_begin + 1
 kernel_reu_page  := 0
+kernel_start := $4000
 
         .segment "LOWCODE"
 
@@ -41,17 +42,21 @@ bootstrap:
         ldx #>check_msg
         jsr cputs
 
+        lda #<kernel_start
+        ldx #>kernel_start
+        jsr cput_hex16
+
         ; signature found? 'FUZ\001'
-        lda kernel_begin
+        lda kernel_start
         cmp #'F'
         bne error
-        lda kernel_begin+1
+        lda kernel_start+1
         cmp #'U'
         bne error
-        lda kernel_begin+2
+        lda kernel_start+2
         cmp #'Z'
         bne error
-        lda kernel_begin+3
+        lda kernel_start+3
         cmp #1
         bne error
 
@@ -61,7 +66,7 @@ bootstrap:
         jsr cputs
 
         ; jump to kernel
-        jmp kernel_begin+4
+        jmp kernel_start+4
 
 error:
         lda #<error_msg
@@ -76,6 +81,6 @@ die:    jmp die
 
 copy_msg: .byte "copied kernel to $",0
 dot_msg:  .byte " ... $",0
-check_msg:   .byte "check: ",0
-go_msg:   .byte "ok",10,"go!",10,0
-error_msg: .byte "ERROR!",0
+check_msg:   .byte "check $",0
+go_msg:   .byte " ok",10,"go!",10,0
+error_msg: .byte " ERROR!",0
