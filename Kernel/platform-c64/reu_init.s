@@ -2,7 +2,9 @@
 
         .include "reu.inc"
 
-        .code
+        .import reu_detect_buf
+
+        .segment "STARTUP"
 
 ; detect a REU and return the max page in A
 .proc reu_detect
@@ -46,6 +48,35 @@ found:
         rts
 no_reu:
         lda #0
+        rts
+.endproc
+
+; backup the test bytes of the REU into C64 RAM
+; so the detect routine does not garble existing REU space
+; a $100 sized buffer needs to be given -> reu_detect_buf
+.proc reu_detect_save
+        ldx #0
+        ldy #OP_COPYFROM_ALOAD
+loop:
+        jsr reu_transfer_byte
+        lda test_byte
+        sta reu_detect_buf,x
+        inx
+        bne loop
+        rts
+.endproc
+
+; restore the test bytes in REU
+; A=<buffer X=>buffer
+.proc reu_detect_restore
+        ldx #0
+        ldy #OP_COPYTO_ALOAD
+loop:
+        lda reu_detect_buf,x
+        sta test_byte
+        jsr reu_transfer_byte
+        inx
+        bne loop
         rts
 .endproc
 
@@ -96,10 +127,8 @@ found:
         rts
 .endproc
 
-        .data
 test_byte: .byte 0
 
-        .rodata
 reu_pages: .byte $ff,  $7f, $3f, $1f, $f,  7,  3,  1
 reu_pages_end:
 reu_sizes: .word 16384,8192,4096,2048,1024,512,256,128

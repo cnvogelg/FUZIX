@@ -2,7 +2,6 @@
 
         .include "zeropage.inc"
         .include "console.inc"
-        .include "blkcopy.inc"
         .macpack cbm
 
         .export cinit
@@ -18,22 +17,25 @@ cptr:           .res 2
 ctmp:           .res 1
 
 COLRAM_ADDR := $d800
+SCREEN_ADDR := $400
+SCREEN_SIZE := 1000
 MAX_X = 40
 MAX_Y = 25
 
-        .code
+        .segment "STARTUP"
 
 .proc cinit
-        ; vic bank $c000-$ffff
+        ; ensure default vic bank $0000-$3fff
         lda $dd02
         ora #3
         sta $dd02
         lda $dd00
         and #%11111100
+        ora #3
         sta $dd00
 
-        ; vic screen at $f800, font at $f000
-        lda #%11101100
+        ; vic screen at $400, font at $1800 (ROM)
+        lda #%00010110
         sta $d018
 
         ; color
@@ -55,11 +57,10 @@ loop:   sta COLRAM_ADDR,x
         ; clear screen
         jsr cclrscr
 
-        ; copy font
-        blkcopy font_src, $f000, 2048
-
         rts
 .endproc
+
+        .segment "LOWCODE"
 
 .proc cclrscr
         ldx #0
@@ -187,11 +188,7 @@ cput_hex8:
         lda     hextab,y
         jmp     cputc
 
-        .data
 cursor_x: .res 1
 cursor_y: .res 1
 
-        .rodata
 hextab: .byte "0123456789abcdef"
-font_src:
-        .incbin "font.bin"

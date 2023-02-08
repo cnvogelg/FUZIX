@@ -14,5 +14,70 @@ OP_COPYTO   := $EC
 OP_COPYFROM_ALOAD := $B1
 OP_COPYTO_ALOAD   := $B0
 
+        ; declare in your code:
+        .global reu_detect_buf
+
         .global reu_detect
+        .global reu_detect_save
+        .global reu_detect_restore
         .global reu_size
+
+        .macro reu_trigger
+                lda REU_TRIGGER
+                sta REU_TRIGGER
+        .endmacro
+
+        .macro reu_copy c64_addr, reu_page, reu_addr, count, op
+                lda #<reu_addr
+                sta REU_REUADDR
+                lda #>reu_addr
+                sta REU_REUADDR+1
+                lda #reu_page
+                sta REU_REUADDR+2
+
+                lda #<c64_addr
+                sta REU_C64ADDR
+                lda #>c64_addr
+                sta REU_C64ADDR+1
+
+                lda #<count
+                sta REU_COUNT
+                lda #>count
+                sta REU_COUNT+1
+
+                lda #0
+                sta REU_CONTROL
+                lda #op
+                sta REU_COMMAND
+        .endmacro
+
+        .macro reu_copyto_auto c64_addr, reu_page, reu_addr, count
+                reu_copy c64_addr, reu_page, reu_addr, count, OP_COPYTO_ALOAD
+        .endmacro
+
+        .macro reu_copyfrom_auto c64_addr, reu_page, reu_addr, count
+                reu_copy c64_addr, reu_page, reu_addr, count, OP_COPYFROM_ALOAD
+        .endmacro
+
+        .macro reu_copyto c64_addr, reu_page, reu_addr, count
+                reu_copy c64_addr, reu_page, reu_addr, count, OP_COPYTO
+        .endmacro
+
+        .macro reu_copyfrom c64_addr, reu_page, reu_addr, count
+                reu_copy c64_addr, reu_page, reu_addr, count, OP_COPYFROM
+        .endmacro
+
+        .macro map_io
+                ; memory setup: RAM only + I/O
+                lda $1
+                and #%11111000
+                ora #%00000101
+                sta $1
+        .endmacro
+
+        .macro map_ram
+                ; memory setup: RAM only + NO I/O
+                lda $1
+                and #%11111000
+                sta $1
+        .endmacro

@@ -2,6 +2,8 @@
 
         .global blkcopy_helper
 
+        .segment "STARTUP"
+
 ; from=ptr1, to=ptr2, size_lo=a, size_hi=x
 .proc blkcopy_helper
         pha

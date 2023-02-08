@@ -6,21 +6,23 @@
         .include "reu.inc"
         .macpack cbm
 
-        .import __LOCOPY_RUN__
-        .import __LOCOPY_LOAD__
-        .import __LOCOPY_SIZE__
+        .import __LOWCODE_RUN__
+        .import __LOWCODE_LOAD__
+        .import __LOWCODE_SIZE__
+        .import bootstrap
 
 MIN_REU_PAGES = $7f
 
         .export start
+        .export reu_detect_buf
+
+        ; use "free space"
+reu_detect_buf := $d000 - $100
 
         .zeropage
 ptr1:   .res    2
 ptr2:   .res    2
 tmp1:   .res    2
-
-;
-        bsize := tmp1
 
         ; here we begin
         .segment "STARTUP"
@@ -29,10 +31,10 @@ start:
         cld
 
         ; memory setup: RAM only + I/O
-        lda $1
-        and #%11111000
-        ora #%00000101
-        sta $1
+        map_io
+
+        ; copy bootstrap to lo ram
+        blkcopy __LOWCODE_LOAD__, __LOWCODE_RUN__, __LOWCODE_SIZE__
 
         ; setup console
         jsr cinit
@@ -43,9 +45,11 @@ start:
         jsr cputs
 
         ; detect reu
+        jsr reu_detect_save
         jsr reu_detect
         sta reu_max_pages
         jsr cput_hex8
+        jsr reu_detect_restore
 
         ; no REU?
         lda reu_max_pages
@@ -60,6 +64,7 @@ reu_found:
         ldx #>size_msg
         jsr cputs
         ; reu size
+        lda reu_max_pages
         jsr reu_size
         jsr cput_hex16
         lda #<kb_msg
@@ -75,10 +80,12 @@ reu_found:
         jmp error_end
 
 reu_ok:
-        ; copy low range to lo ram
-        blkcopy __LOCOPY_LOAD__, __LOCOPY_RUN__, __LOCOPY_SIZE__
+        lda #<bootstrap_msg
+        ldx #>bootstrap_msg
+        jsr cputs
 
-        jmp __LOCOPY_RUN__
+        ; jump to bootstrap
+        jmp bootstrap
 
 error_end:
         jsr cputs
@@ -92,19 +99,10 @@ error_end:
 
 end:    jmp end
 
-        .segment "LOCOPY"
-low_start:
-        lda $d012
-        sta $d020
-        jmp low_start        
-low_end:
-
-        .data
 reu_max_pages: .res 1
 
-        .rodata
 hello_msg:
-        .byte "FUZIL/lallafa v1",10
+        .byte "FUZIX loader",10
         .byte "-----",10
         .byte "REU: pages=$",0
 size_msg:
@@ -116,3 +114,5 @@ too_small_msg:
         .byte "TOO SMALL!",0
 error_msg:
         .byte 10,10,"ERROR! ABORT.",0
+bootstrap_msg:
+        .byte "bootstrapping...",10,0
