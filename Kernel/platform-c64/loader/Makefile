@@ -1,5 +1,10 @@
 all: disk.d64 img.reu
 
+REU_IMG = ../../../Images/c64/img.reu
+
+runk: disk.d64 $(REU_IMG)
+	x64sc -autostart $< -reu -reusize 16384 -reuimage $(REU_IMG)
+
 run: disk.d64 img.reu
 	x64sc -autostart $< -reu -reusize 16384 -reuimage img.reu
 
