@@ -81,3 +81,10 @@ OP_COPYTO_ALOAD   := $B0
                 and #%11111000
                 sta $1
         .endmacro
+
+        .macro map_rom_io
+                lda $1
+                and #%11111000
+                ora #%00000111
+                sta $1
+        .endmacro

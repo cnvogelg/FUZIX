@@ -38,6 +38,10 @@ MAX_Y = 25
         lda #%00010110
         sta $d018
 
+        ; disable vic IRQ
+        lda #0
+        sta $d01a
+
         ; color
         lda #0
         sta $d020
