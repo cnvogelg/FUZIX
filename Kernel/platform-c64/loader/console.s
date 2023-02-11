@@ -2,7 +2,6 @@
 
         .include "zeropage.inc"
         .include "console.inc"
-        .macpack cbm
 
         .export cinit
         .export cclrscr
@@ -138,8 +137,8 @@ cnewline:
         stx cursor_x
         ; inc cursor Y
         ldx cursor_y
-        cpx #MAX_Y
-        beq @end
+        cpx #MAX_Y-1
+        beq @scroll_up
         inc cursor_y
 
         ; inc screen ptr
@@ -150,6 +149,31 @@ cnewline:
         bcc @end
         inc screen_ptr+1
 @end:
+        rts
+
+@scroll_up:
+        ldx #0
+@loop:
+        lda SCREEN_ADDR+MAX_X,x
+        sta SCREEN_ADDR,x
+        lda SCREEN_ADDR+MAX_X+240,x
+        sta SCREEN_ADDR+240,x
+        lda SCREEN_ADDR+MAX_X+480,x
+        sta SCREEN_ADDR+480,x
+        lda SCREEN_ADDR+MAX_X+720,x
+        sta SCREEN_ADDR+720,x
+        inx
+        cpx #240
+        bne @loop
+
+        ; clear new line
+        ldx #MAX_X-1
+        lda #32 ; space
+@loop2:
+        sta SCREEN_ADDR+SCREEN_SIZE-MAX_X,x
+        dex
+        bpl @loop2
+
         rts
 
 ; A=lo X=hi

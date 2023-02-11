@@ -1,14 +1,9 @@
 
         .include "reu.inc"
         .include "console.inc"
+        .include "kernel.inc"
 
         .export bootstrap
-
-kernel_begin := $800
-kernel_end   := $ffff
-kernel_size  := kernel_end - kernel_begin + 1
-kernel_reu_page  := 0
-kernel_start := $4000
 
         .segment "LOWCODE"
 
@@ -17,34 +12,6 @@ bootstrap:
         reu_copyfrom kernel_begin, kernel_reu_page, kernel_begin, kernel_size
         map_ram
         reu_trigger
-
-        ; report copy
-        lda #<copy_msg
-        ldx #>copy_msg
-        jsr cputs
-
-        lda #<kernel_begin
-        ldx #>kernel_begin
-        jsr cput_hex16
-
-        lda #<dot_msg
-        ldx #>dot_msg
-        jsr cputs
-
-        lda #<kernel_end
-        ldx #>kernel_end
-        jsr cput_hex16
-
-        jsr cnewline
-
-        ; check kernel image
-        lda #<check_msg
-        ldx #>check_msg
-        jsr cputs
-
-        lda #<kernel_start
-        ldx #>kernel_start
-        jsr cput_hex16
 
         ; signature found? 'FUZ\001'
         lda kernel_start
@@ -79,8 +46,5 @@ error:
 
 die:    jmp die
 
-copy_msg: .byte "copied kernel to $",0
-dot_msg:  .byte " ... $",0
-check_msg:   .byte "check $",0
-go_msg:   .byte " ok",10,"go!",10,0
+go_msg:   .byte " ok!",10,0
 error_msg: .byte " ERROR!",0

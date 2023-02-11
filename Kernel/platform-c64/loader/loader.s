@@ -1,9 +1,10 @@
 ; FUZIX REU loader for C64
 
         .include "console.inc"
+        .include "keyboard.inc"
         .include "blkcopy.inc"
         .include "reu.inc"
-        .macpack cbm
+        .include "kernel.inc"
 
         .import __LOWCODE_RUN__
         .import __LOWCODE_LOAD__
@@ -30,8 +31,9 @@ start:
         ; copy bootstrap to lo ram
         blkcopy __LOWCODE_LOAD__, __LOWCODE_RUN__, __LOWCODE_SIZE__
 
-        ; setup console
+        ; setup console and keyboard
         jsr cinit
+        jsr kbdinit
 
         ; welcome message
         lda #<hello_msg
@@ -74,9 +76,33 @@ reu_found:
         jmp error_end
 
 reu_ok:
-        lda #<bootstrap_msg
-        ldx #>bootstrap_msg
+        ; report kernel copy
+        lda #<copy_msg
+        ldx #>copy_msg
         jsr cputs
+
+        lda #<kernel_begin
+        ldx #>kernel_begin
+        jsr cput_hex16
+
+        lda #<dot_msg
+        ldx #>dot_msg
+        jsr cputs
+
+        lda #<kernel_end
+        ldx #>kernel_end
+        jsr cput_hex16
+
+        jsr cnewline
+
+        ; kernel start
+        lda #<check_msg
+        ldx #>check_msg
+        jsr cputs
+
+        lda #<kernel_start
+        ldx #>kernel_start
+        jsr cput_hex16
 
         ; jump to bootstrap
         jmp bootstrap
@@ -108,5 +134,6 @@ too_small_msg:
         .byte "TOO SMALL!",0
 error_msg:
         .byte 10,10,"ERROR! ABORT.",0
-bootstrap_msg:
-        .byte "bootstrapping...",10,0
+copy_msg: .byte "copy kernel to $",0
+dot_msg:  .byte " ... $",0
+check_msg: .byte "start $",0

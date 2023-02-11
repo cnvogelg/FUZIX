@@ -27,7 +27,7 @@ disk.d64: loader.prg
 img.reu:
 	dd if=/dev/zero of=img.reu bs=1024 count=16384
 
-LOADER_FILES = exehdr.o reu_init.o bios.o console.o blkcopy.o bootstrap.o loader.o
+LOADER_FILES = exehdr.o reu_init.o bios.o console.o keyboard.o blkcopy.o bootstrap.o loader.o
 
 loader.prg: $(LOADER_FILES) loader.cfg
 	ld65 -Ln $(basename $@).lab -C loader.cfg -o $@ -m $(basename $@).map $(LOADER_FILES)
