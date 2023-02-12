@@ -108,6 +108,10 @@ _plt_reboot:
 	    sta $d020
 	    sta $d021
 
+wait_key:
+	    jsr KBDPOLL
+	    bcc wait_key
+
 	    jmp ($FFFC)
 
 ___hard_di:

@@ -2,7 +2,7 @@
 CSRCS = devtty.c devhd.c
 CSRCS += devices.c main.c
 
-ASRCS = c64.s crt0.s
+ASRCS = c64.s crt0.s reudisk.s
 ASRCS += tricks.s commonmem.s
 
 DSRCS = ../dev/blkdev.c
@@ -43,7 +43,7 @@ image:
 	crt0.o commonmem.o \
 	c64.o ../start.o ../version.o ../lowlevel-6502.o \
 	tricks.o main.o ../timer.o ../kdata.o devices.o \
-	devhd.o \
+	devhd.o reudisk.o \
 	../devio.o ../filesys.o ../process.o ../inode.o ../syscall_fs.o \
 	../syscall_proc.o ../syscall_other.o ../mm.o ../bankfixed.o \
 	../tty.o ../devsys.o ../syscall_fs2.o ../syscall_fs3.o \
