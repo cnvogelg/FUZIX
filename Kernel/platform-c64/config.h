@@ -22,13 +22,13 @@
  *	have to copy stuff/watching sharing
  */
 #define CONFIG_BANK_FIXED
-#define MAX_MAPS 	7   /* 9 x 64K */
+#define MAX_MAPS 	15
 #define MAP_SIZE    0xDE00
 
 #define TICKSPERSEC 100	    /* Ticks per second */
 
 /* We've not yet made the rest of the code - eg tricks match this ! */
-#define MAPBASE	    0x0000  /* We map from 0 */
+#define MAPBASE	    0x2000  /* mpa base */
 #define PROGBASE    0x2000  /* also data base */
 #define PROGLOAD    0x2000
 #define PROGTOP     0xFE00

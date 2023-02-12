@@ -7,8 +7,6 @@
 #include <printf.h>
 #include <devhd.h>
 
-extern uint8_t hd_map;
-
 extern void __fastcall__ reudisk_set_lba(uint16_t lba);
 extern void __fastcall__ reudisk_read_blk(uint16_t addr);
 extern void __fastcall__ reudisk_write_blk(uint16_t addr);
@@ -22,8 +20,6 @@ static int hd_transfer(uint8_t minor, bool is_read, uint8_t rawflag)
     /* FIXME: add swap */
     if(rawflag == 1 && d_blkoff(9))
         return -1;
-
-    hd_map = rawflag;
 
     dptr = (uint16_t)udata.u_dptr;
     nb = udata.u_nblock;

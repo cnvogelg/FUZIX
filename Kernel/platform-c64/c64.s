@@ -101,6 +101,10 @@ no_key:
 
 _plt_monitor:
 _plt_reboot:
+	    lda #<oops_msg
+	    ldx #>oops_msg
+	    jsr CPUTS
+
 	    ; back to C64 Kernal
 	    map_rom_io
 
@@ -113,6 +117,8 @@ wait_key:
 	    bcc wait_key
 
 	    jmp ($FFFC)
+
+oops_msg:   .byte 10,"OOPS!",10,0
 
 ___hard_di:
 	    php
@@ -750,73 +756,3 @@ _plt_interrupt_i:
 	    jmp _plt_interrupt
 
 
-;
-;	Disk copier (needs to be in common), call with ints off
-;	for now
-;
-;	AX = ptr, length always 512, src and page in globals
-;
-;	Uses ptr3/4 as 1/2 are reserved for the mappers
-;
-;	FIXME: map_process_always doesn't map the low 16K for 6502 so we
-;	have more work to do here to support swap.
-;
-
-	.export _hd_read_data,_hd_write_data,_hd_map
-
-_hd_read_data:
-	sta ptr3
-	stx ptr3+1		; Save the target
-
-	;
-	;	We must flip banks before we play mmu pokery, or it will
-	; undo all our work. This means our variables must be commondata
-	;
-	lda _hd_map
-	beq hd_kmap
-	jsr map_process_always
-hd_kmap:
-	ldy #0
-	jsr hd_read256
-	inc ptr3+1
-	jsr hd_read256
-	jsr map_kernel
-	rts
-
-hd_read256:
-	lda $FE10
-	sta (ptr3),y
-	iny
-	bne hd_read256
-	rts
-
-_hd_write_data:
-	sta ptr3
-	stx ptr3+1		; Save the target
-
-	;
-	;	We must flip banks before we play mmu pokery, or it will
-	; undo all our work. This means our variables must be commondata
-	;
-	lda _hd_map
-	beq hd_kmapw
-	jsr map_process_always
-hd_kmapw:
-	ldy #0
-	jsr hd_write256
-	inc ptr3+1
-	jsr hd_write256
-	jsr map_kernel
-	rts
-
-hd_write256:
-	lda (ptr3),y
-	sta $FE10
-	iny
-	bne hd_write256
-	rts
-
-	.segment "COMMONDATA"
-
-_hd_map:
-	.res 1
