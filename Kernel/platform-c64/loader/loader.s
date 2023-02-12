@@ -5,10 +5,20 @@
         .include "blkcopy.inc"
         .include "reu.inc"
         .include "kernel.inc"
+        .include "memmap.inc"
 
-        .import __LOWCODE_RUN__
-        .import __LOWCODE_LOAD__
-        .import __LOWCODE_SIZE__
+        .import __BIOS_RUN__
+        .import __BIOS_LOAD__
+        .import __BIOS_SIZE__
+
+        .import __BOOTSTRAP_RUN__
+        .import __BOOTSTRAP_LOAD__
+        .import __BOOTSTRAP_SIZE__
+
+        .import __KEYDATA_RUN__
+        .import __KEYDATA_LOAD__
+        .import __KEYDATA_SIZE__
+
         .import bootstrap
 
 MIN_REU_PAGES = $7f
@@ -28,8 +38,10 @@ start:
         ; memory setup: RAM only + I/O
         map_io
 
-        ; copy bootstrap to lo ram
-        blkcopy __LOWCODE_LOAD__, __LOWCODE_RUN__, __LOWCODE_SIZE__
+        ; copy bios, bootstrap and keydata to run location
+        blkcopy __BIOS_LOAD__, __BIOS_RUN__, __BIOS_SIZE__
+        blkcopy __KEYDATA_LOAD__, __KEYDATA_RUN__, __KEYDATA_SIZE__
+        blkcopy __BOOTSTRAP_LOAD__, __BOOTSTRAP_RUN__, __BOOTSTRAP_SIZE__
 
         ; setup console and keyboard
         jsr cinit

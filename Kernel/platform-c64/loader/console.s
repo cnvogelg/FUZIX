@@ -63,7 +63,7 @@ loop:   sta COLRAM_ADDR,x
         rts
 .endproc
 
-        .segment "LOWCODE"
+        .segment "BIOS"
 
 .proc cclrscr
         ldx #0

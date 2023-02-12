@@ -5,12 +5,11 @@
 
         .exportzp key_mods
         .exportzp key_code
-        .exportzp key_coord
 
         .zeropage
 key_mods:  .res 1
 key_code:  .res 1
-key_coord: .res 1
+
         .segment "STARTUP"
 
 .proc kbdinit
@@ -20,20 +19,13 @@ key_coord: .res 1
         lda #$ff
         sta $dc02   ; port a ddr (output)
 
-        ; copy key map
-        ldx #0
-copy:
-        lda key_map,x
-        sta KEY_MAP_ADDR,x
-        inx
-        bne copy
-
         rts
 .endproc
 
-        .segment "LOWCODE"
+        .segment "BIOS"
 
-; set carry if key and key code in A
+; return: carry if key pressed
+; A=key code or KEY_NONE, X=modifiers
 .proc kbdpoll
         lda #$00
         sta $dc00
@@ -83,7 +75,7 @@ row_scan:
 
         dex
         bpl row_scan
-        bmi no_key ; should never happen
+        bmi no_key ; only modifiers
 
 got_key:
         ; A -> Y as column index
@@ -105,21 +97,66 @@ col_found:
         asl
         asl
         ora key_code
-        sta key_coord
 
         ; now finally retrieve key code from the key coord
+        ; and use as offset into key map
         sta mod+1
-mod:    lda KEY_MAP_ADDR
+mod:    lda key_map
         sta key_code
 
+        ldx key_mods
         sec
         rts
 no_key:
         lda #KEY_NONE
         sta key_code
+        ldx key_mods
         clc
         rts
 .endproc
+
+; convert raw key code with modifiers to final key A->A
+.proc kbdcook
+        lda key_mods
+        and #KEY_MOD_LSHIFT | KEY_MOD_RSHIFT
+        beq done
+
+        lda key_code
+        bmi special
+
+        cmp #'a'
+        bmi done
+        cmp #'z'+1
+        bpl done
+
+        sec
+        sbc #$20 ; make upper case
+        rts
+
+special:
+        ; add +1 for shifted special keys
+        clc
+        adc #1
+        rts
+
+done:
+        lda key_code
+        rts
+.endproc
+
+        .segment "KEYDATA"
+
+; keymap needs to be page aligned
+        .align 256
+key_map:
+        .byte KEY_DELETE, KEY_RETURN, KEY_RIGHT, KEY_F7, KEY_F1, KEY_F3, KEY_F5, KEY_DOWN
+        .byte "3wa4zse",0
+        .byte "5rd6cftx"
+        .byte "7yg8bhuv"
+        .byte "9ij0mkon"
+        .byte "+pl-.:@,"
+        .byte KEY_POUND, "*;", KEY_HOME, 0, "=^/"
+        .byte "1", KEY_ARROW, 0, "2 ", 0, "q", KEY_STOP
 
 ; ORA these values in the keyboard matrix scan to mute the modifiers
 key_mod_mask:
@@ -133,18 +170,6 @@ mod_mask:
         .byte %10000000,%00010000,%00000100,%00100000
 mod_bit:
         .byte KEY_MOD_LSHIFT, KEY_MOD_RSHIFT, KEY_MOD_CONTROL, KEY_MOD_CBM
-
-        .segment "STARTUP"
-; keymap will be copied from loader to KEY_MAP_ADDR on init
-key_map:
-        .byte KEY_DELETE, KEY_RETURN, KEY_RIGHT, KEY_F7, KEY_F1, KEY_F3, KEY_F5, KEY_DOWN
-        .byte "3wa4zse",0
-        .byte "5rd6cftx"
-        .byte "7yg8bhuv"
-        .byte "9ij0mkon"
-        .byte "+pl-.:@,"
-        .byte KEY_POUND, "*;", KEY_HOME, 0, "=^/"
-        .byte "1", KEY_ARROW, 0, "2 ", 0, "q", KEY_STOP
 
 ; +----+----------------------+-------------------------------------------------------------------------------------------------------+
 ; |    |                      |                                Peek from $dc01 (code in paranthesis):                                 |

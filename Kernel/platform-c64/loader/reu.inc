@@ -66,25 +66,3 @@ OP_COPYTO_ALOAD   := $B0
         .macro reu_copyfrom c64_addr, reu_page, reu_addr, count
                 reu_copy c64_addr, reu_page, reu_addr, count, OP_COPYFROM
         .endmacro
-
-        .macro map_io
-                ; memory setup: RAM only + I/O
-                lda $1
-                and #%11111000
-                ora #%00000101
-                sta $1
-        .endmacro
-
-        .macro map_ram
-                ; memory setup: RAM only + NO I/O
-                lda $1
-                and #%11111000
-                sta $1
-        .endmacro
-
-        .macro map_rom_io
-                lda $1
-                and #%11111000
-                ora #%00000111
-                sta $1
-        .endmacro

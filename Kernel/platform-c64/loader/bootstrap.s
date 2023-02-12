@@ -2,10 +2,12 @@
         .include "reu.inc"
         .include "console.inc"
         .include "kernel.inc"
+        .include "keyboard.inc"
+        .include "memmap.inc"
 
         .export bootstrap
 
-        .segment "LOWCODE"
+        .segment "BOOTSTRAP"
 
 bootstrap:
         ; copy kernel from REU
