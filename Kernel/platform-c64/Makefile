@@ -1,12 +1,12 @@
 
-CSRCS = devtty.c
+CSRCS = devtty.c devhd.c
 CSRCS += devices.c main.c
 
 ASRCS = c64.s crt0.s
 ASRCS += tricks.s commonmem.s
 
-DSRCS = ../dev/devide.c ../dev/blkdev.c
-DISCARD_DSRCS = ../dev/mbr.c ../dev/devide_discard.c
+DSRCS = ../dev/blkdev.c
+DISCARD_DSRCS =
 
 COBJS = $(CSRCS:.c=$(BINEXT))
 AOBJS = $(ASRCS:.s=$(BINEXT))
@@ -43,7 +43,7 @@ image:
 	crt0.o commonmem.o \
 	c64.o ../start.o ../version.o ../lowlevel-6502.o \
 	tricks.o main.o ../timer.o ../kdata.o devices.o \
-	blkdev.o mbr.o devide.o devide_discard.o \
+	devhd.o \
 	../devio.o ../filesys.o ../process.o ../inode.o ../syscall_fs.o \
 	../syscall_proc.o ../syscall_other.o ../mm.o ../bankfixed.o \
 	../tty.o ../devsys.o ../syscall_fs2.o ../syscall_fs3.o \

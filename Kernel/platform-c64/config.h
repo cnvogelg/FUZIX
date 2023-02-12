@@ -33,7 +33,6 @@
 #define PROGLOAD    0x2000
 #define PROGTOP     0xFE00
 
-#define CONFIG_IDE
 #define MAX_BLKDEV 1
 
 /* FIXME: swap */
