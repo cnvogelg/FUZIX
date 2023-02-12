@@ -61,10 +61,8 @@ void tty_data_consumed(uint8_t minor)
 
 void tty_poll(void)
 {
-        uint8_t x=0;
-        
-        if (x) {
+        uint8_t x = cgetc();
+        if (x != 0) {
 		tty_inproc(1, x);
 	}
 }
-                

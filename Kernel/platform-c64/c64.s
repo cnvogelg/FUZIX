@@ -56,14 +56,43 @@
             .include "../kernel02.def"
 	    .include "zeropage.inc"
 
-	    .include "reu.inc"
+	    .include "memmap.inc"
 	    .include "bios.inc"
 
 ; loader BIOS stubs
+	    .export _cputc
+	    .export _cgetc
 
-_cputc:
-	    jsr CPUTC
+	    .zeropage
+last_key_code: .res 1
+
+            .segment "COMMONMEM"
+
+_cputc 		:= CPUTC
+
+.proc _cgetc
+	    map_io
+	    jsr KBDPOLL
+	    bcc no_key
+
+	    jsr KBDCOOK
+
+	    ; debounce last key
+	    cmp last_key_code
+	    beq no_key
+
+	    sta last_key_code
+	    tax
+	    map_ram
+	    txa
 	    rts
+no_key:
+	    ; store KEY_NONE
+	    sta last_key_code
+	    map_ram
+	    lda #0
+	    rts
+.endproc
 
 ; -----------------------------------------------------------------------------
 ; COMMON MEMORY BANK (0x0200 upwards after the common data blocks)
