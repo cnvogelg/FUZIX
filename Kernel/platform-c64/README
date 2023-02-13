@@ -1,0 +1,66 @@
+Commodore 64 Port using (modern 16MB) REU
+
+The idea here is to use the (huge) REU memory for multiple purposes: first of
+all its the "paged" storage for the processes. Furthermore the second half (8
+MB) is used as a RAM disk for booting the system. So the REU in total is
+sufficient HW for booting FUZIX. Later on the REU might be also used for extra
+buffers or multiple VTs.
+
+Currently, the REU has to be preloaded with a FUZIX kernel image in page 0 and
+the root image starting with page $80. Preloading is done in VICE emulator very
+easily. This also works on a real machine with a big REU (e.g. Ultimate II+,
+Ultimate 64, RAD, Turbo Chameleon 64).
+
+
+The Loader
+
+A loader.prg is created on a disk image (or run directly) to get FUZIX up and
+running. It basically checks for the REU, its minimum size, and verifies that
+the REU image was correctly preloaded. It also sets up the basic memory layout
+and initializes the "console". To simplify porting and testing a small "BIOS" is
+installed by the loader that contains the basic output commands to the console
+and also handles the keyboard. The FUZIX kernel then uses the BIOS jump table to
+access this functionality.
+
+
+Build Instructions
+
+Build the final disk image of FUZIX as usual from top-level
+
+$ make TARGET=c64 diskimage
+
+The resulting REU image is found in 'Images/c64/img.reu'
+
+Then the loader disk image 'loader.d64':
+
+$ cd Kernel/platform-c64/loader
+$ make
+
+
+Run in Emulator
+
+Launch VICE:
+
+$ x64sc -autostart loader.d64 -reu -reusize 16384 -reuimage img.reu
+
+On Real Machine
+
+* transfer 'img.reu' into real REU
+* launch 'loader.prg' on machine
+
+On an Ultimate64 or UltimateII+ you can remote run from your host with:
+
+$ u64cmd -h <ip> reu_load img.reu prg_load -r loader.prg
+
+
+Technical Details
+
+The loader memory map:
+
+0000-00ff  zero page (bios uses $f0-$ff)
+0100-01ff  stack
+0200-03ff  bootstrap to copy and launch kernel
+0400-07ff  text screen (40x25, first 1000 bytes)
+0800-fe00  free for kernel
+fe00-fff9  bios
+fffa-ffff  hw vectors
