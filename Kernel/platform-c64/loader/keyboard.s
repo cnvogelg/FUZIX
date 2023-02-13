@@ -100,7 +100,11 @@ col_found:
 
         ; now finally retrieve key code from the key coord
         ; and use as offset into key map
+        clc
+        adc #<key_map
         sta mod+1
+        lda #>key_map
+        sta mod+2
 mod:    lda key_map
         sta key_code
 
@@ -144,10 +148,7 @@ done:
         rts
 .endproc
 
-        .segment "KEYDATA"
-
 ; keymap needs to be page aligned
-        .align 256
 key_map:
         .byte KEY_DELETE, KEY_RETURN, KEY_RIGHT, KEY_F7, KEY_F1, KEY_F3, KEY_F5, KEY_DOWN
         .byte "3wa4zse",0

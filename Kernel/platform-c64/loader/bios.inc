@@ -1,4 +1,4 @@
-        BIOS_BASE := $200
+        BIOS_BASE := $fe00
 
         ; jump table of bios
         CPUTC       := BIOS_BASE
